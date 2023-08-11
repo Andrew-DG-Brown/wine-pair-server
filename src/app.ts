@@ -12,21 +12,20 @@ class App {
         this.express = express();
         this.port = port;
         this.initMiddleware()
-        // console.log(this.express)
-
         this.listen()
     }
-
-    //TODO: setup Error handling
 
     private initMiddleware(): void {
         this.express.use(express.json())
         this.express.use(cors({
-            origin: 'http://localhost:8000',
+            origin: true,
             credentials: true
         }))
-        this.express.use(helmet())
+        this.express.use(helmet({
+            crossOriginEmbedderPolicy: false
+          }))
         this.express.use(cookieParser())
+        this.express.use(express.static('public'))
     }
 
     private listen(): void {

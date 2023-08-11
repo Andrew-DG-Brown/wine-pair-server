@@ -8,7 +8,7 @@ export class Validators {
         const accessToken = req.cookies["accessToken"]
         if (!accessToken) res.status(400).json({ error: 'User not authenticated' })
         try {
-            const isValid = verify(accessToken, process.env.SECRET as string)
+            const isValid = verify(accessToken, String(process.env.SECRET))
             if (isValid) {
                 req["authenticated"] = true
                 next()

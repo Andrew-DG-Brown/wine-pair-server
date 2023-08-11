@@ -10,13 +10,13 @@ router.route('/food-pairing')
     .get(async (req: Request, res: Response) => {
         try {
             const { wine } = req.query as any
-            const foodPairing = await FoodController.getPairing(wine)
-            if ("error" in foodPairing) {
-                console.log(Colors.FgRed, foodPairing)
-                res.status(404).json(foodPairing)
-            } else {
-                res.status(200).json(foodPairing)
-            }
+                res.status(500).send('UNDER MAINTENANCE')
+            // const foodPairing = await FoodController.getPairing(wine)
+            // if ("error" in foodPairing) {
+            //     console.log(Colors.FgRed, foodPairing)
+            //     res.status(404).json(foodPairing)
+            // } else {
+            // }
         } catch (err: any) {
             console.log(Colors.FgRed, 'Error in food.get')
             res.status(500).send({ 

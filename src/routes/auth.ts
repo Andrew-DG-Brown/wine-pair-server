@@ -79,7 +79,6 @@ router.route('/email-validate')
                 res.json({ valid: true })
             }
         } catch (err: any) {
-            console.log('here')
             res.status(500).json({ reject: "ERROR couldn't validate user" })
             throw new Error(err)
         }

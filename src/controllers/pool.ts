@@ -11,29 +11,37 @@ class PoolController {
     pool;
 
     constructor(dbName: string) {
-        this.pool = new Pool({
-            user: "postgres",
-            // password: ""
-            host: "localhost",
-            port: 5432,
+        const { PG_PASSWORD, PG_USER, PG_HOST, PG_PORT } = process.env
+        const config = {
+            user: 'postgres',
+            password: PG_PASSWORD,
+            host: 'localhost',
+            port: Number(5432),
             database: dbName
-        })
+        }
+        this.pool = new Pool(config)
+        console.log()
     }
 
     async query(query: string, content?: Array<any>): Promise<QueryResult> {
-        return await this.pool.query(query, content)
+        return await this.pool.query(query, content);
     }
 
     async insert({ tableName, payload }: InsertConfig): Promise<QueryResult> {
         const columnsNumString = Object.keys(payload).map((_, index) => `$${index + 1}`). join(', ')
-        return await this.pool.query(`INSERT INTO ${tableName} (${Object.keys(payload).join(', ')}) VALUES(${columnsNumString}) RETURNING *`, Object.values(payload))
+        const values = Object.values(payload).map((val) => {
+            return Array.isArray(val) ? JSON.stringify(val) : val
+        })
+
+        const insertString = `INSERT INTO ${tableName} (${Object.keys(payload).join(', ')}) VALUES(${columnsNumString}) RETURNING *`
+
+        return await this.pool.query(insertString, values)
     }
 
     async update(tableName: string, payload: object, uId: number) {
         const updateString = Object.entries(payload).map(([column, value]) => {
             return `${column} = '${value}'`
         }).join(', ')
-        console.log(updateString)
         return await this.pool.query(`UPDATE ${tableName} SET ${updateString} 
             WHERE id = ${uId} RETURNING *`
         )
@@ -44,7 +52,7 @@ class PoolController {
     }
 
     async getUserData({ email }: UserData): Promise<QueryResult> {
-        return await this.pool.query('SELECT email, password, id, username FROM user_auth WHERE email = ($1)', [email])
+        return await this.pool.query(`SELECT email, password, id, username FROM user_auth WHERE email = ('${email}')`)
     }
 }
 

@@ -15,7 +15,6 @@ export default class AuthController {
     
     static async loginUser(userData: UserData): Promise<UserData> {
         const loginRes = await poolController.getUserData(userData)
-        console.log(loginRes)
         return loginRes.rows[0]
     }
     

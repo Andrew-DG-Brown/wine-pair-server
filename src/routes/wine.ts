@@ -15,7 +15,6 @@ router.route('/')
         try {
             const { wine_name, image_url, link, description } = req.body
             const wineInsert = await poolController.query("INSERT INTO winefolly_data (wine_name, image_url, link, description) VALUES($1, $2, $3, $4) RETURNING *", [wine_name, image_url, link, description])
-            console.log(wineInsert.rows)
             res.json(wineInsert.rows)
         } catch (err: any) {
             res.status(500).send(`\nwine.post: Internal server error: ${err}`)
@@ -24,17 +23,15 @@ router.route('/')
     .get(async (req: Request, res: Response) => {
         try {
             const { dish, maxPrice } = req.query as any
-            const pairing = await WineController.getPairing(dish, maxPrice)
+            const wc = new WineController();
+            const pairing = await wc.getPairing(dish, maxPrice)
             if ('error' in pairing){
                 console.log(Colors.FgRed, pairing)
-                //TODO: change to error code and handle on FE with interceptor
-                res.status(200).json(pairing)
-            } else {
-                console.log(pairing)
-                res.status(200).json(pairing)
             }
+            res.status(200).json(pairing)
         } catch (err: any) {
-            res.status(500).send(err)
+            console.log(Colors.FgRed, err.message)
+            res.status(500).send(err.message)
         }
     })
     

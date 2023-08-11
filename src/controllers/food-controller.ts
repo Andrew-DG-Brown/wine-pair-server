@@ -1,14 +1,13 @@
 import axios from 'axios';
-import { apiConfig } from '../configs/api.config.js';
+import apiConfig from '../configs/api.config.js';
 import PoolController from './pool.js';
 import { FoodPairRes, FoodPair } from './interfaces/food-pair.models.js';
 import { StringUtils } from '../utils/string.utils.js';
 
-//TODO: make db for this for caching
-const foodPool = new PoolController("food")
+const api_config = apiConfig()
 const winePool = new PoolController("wine")
-const { wineToFoodApi, headers } = apiConfig['Recipe-Food-Nutrition']
-const { defaultParams, url } = apiConfig.unsplash
+const { wineToFoodApi, headers } = api_config['Recipe-Food-Nutrition']
+const { defaultParams, url } = api_config.unsplash
 
 export class FoodController {
     private static readonly FOOD_PAIR_URL: string = wineToFoodApi.url;
@@ -28,7 +27,7 @@ export class FoodController {
                         recipes: `https://www.epicurious.com/search/${dish}`
                     }
                 }))
-                const wineData = await winePool.query('SELECT image_url, link FROM winefolly_data WHERE lower(wine_name) = lower($1)', [wineName])
+                const wineData = await winePool.query(`SELECT image_url, link FROM winefolly_data WHERE lower(wine_name) = lower('${wineName}')`)
                 return {
                     wineData: wineData.rows.length > 0 ? { 
                         wine_query_name: StringUtils.capitalizeFirsts(wineName),

@@ -1,12 +1,14 @@
 export interface WinePairObj {
-    name: string;
+    name?: string;
+    wine?: string;
     description: string;
 }
 
 export interface FoodWinePairRes {
-    pairedWines: Array<string | object>;
-    pairingText: string;
-    productMatches: Array<ProductMatches>;
+    paired_wines: Array<string | object>;
+    pairing_text: string;
+    product_matches: Array<ProductMatches>;
+    foodquery: string;
 }
 
 export interface FoodWinePairError {
@@ -27,7 +29,7 @@ interface ProductMatches {
 }
 
 export interface SimpleResponse {
-    pairing: Array<SimpleResItem>;
+    pairedWines: Array<SimpleResItem>;
     dish: string;
     maxPrice: number | null;
     type: "simple";
@@ -45,9 +47,9 @@ interface SimpleResItem {
 }
 
 export interface ComplexResponse {
-    pairedWines: Array<object>;
-    pairingText: string;
-    productMatches: Array<ProductMatches>;
+    paired_wines: Array<object>;
+    pairing_text: string;
+    product_matches: Array<ProductMatches>;
     dish: string;
     maxPrice: number | null;
     type: "complex";

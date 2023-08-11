@@ -8,13 +8,12 @@ export class StringUtils {
     }
 
     static validQuery(str: string) {
-        if (str.length <= 2) return false;
+        if (str.length <= 2) return;
 
         const languageDetect = new LanguageDetect()
-        const results = languageDetect.detect(str) as Array<any>
-        if (results[0] == null) {
-            return false;
-        }
+        const results = languageDetect.detect(str)
+        if (results[0] == null) return;
+        
         return results[0][1] > 0.2
     }
 }
