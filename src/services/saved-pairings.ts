@@ -32,15 +32,15 @@ export class SavedPairings {
         return insertRes
     }
 
-    static async isPairingSaved(pairing: any, uId: number): Promise<boolean> {
+    static async isPairingSaved(dish: string, wineName: string, uId: number): Promise<boolean> {
         const { rows } = await poolController.query(
             `
             SELECT EXISTS (SELECT saved_pairings
                 FROM user_account_data
                 WHERE user_id = ${uId}
                 AND EXISTS (SELECT * FROM jsonb_array_elements(saved_pairings) as r(pairing)
-                    WHERE (pairing ->> 'dish')::text = '${pairing.dish}'
-                    AND (pairing ->> 'wine_name')::text = '${pairing.wine_name}'))
+                    WHERE (pairing ->> 'dish')::text = '${dish}'
+                    AND (pairing ->> 'wine_name')::text = '${wineName}'))
             `
         )
         return rows[0].exists

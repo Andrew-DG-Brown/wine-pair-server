@@ -19,6 +19,7 @@ router.route('/register')
             })
             const accessToken = AuthController.createToken(registerRes)
             res.cookie("accessToken", accessToken, { maxAge: ms('30 days'), httpOnly: true})
+            res.cookie("uId", registerRes.id, { maxAge: ms('30 days'), httpOnly: true})
             res.send({ email, status: 'logged in', uId: registerRes.id })
         } catch (err: any) {
             res.status(500).json({ error: 'ERROR in user register' })
@@ -40,6 +41,7 @@ router.route('/login')
             const accessToken = AuthController.createToken(user)
             delete user.password
             res.cookie("accessToken", accessToken, { maxAge: ms('30 days'), httpOnly: true})
+            res.cookie("uId", user.id, { maxAge: ms('30 days'), httpOnly: true})
             res.send({ ...user, uId: user.id })
         } catch (err: any) {
             res.status(500).json({ error: "ERROR couldn't login user" })

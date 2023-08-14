@@ -23,7 +23,8 @@ router.route('/')
     .get(async (req: Request, res: Response) => {
         try {
             const { dish, maxPrice } = req.query as any
-            const wc = new WineController();
+            const { uId } = req.cookies
+            const wc = new WineController(uId);
             const pairing = await wc.getPairing(dish, maxPrice)
             if ('error' in pairing){
                 console.log(Colors.FgRed, pairing)

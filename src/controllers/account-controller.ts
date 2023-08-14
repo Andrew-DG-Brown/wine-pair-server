@@ -6,7 +6,7 @@ const poolController = new PoolController("user_data")
 
 export class AccountController {
     static async savePairing(pairing: any, uId: number) {
-        if (await SavedPairings.isPairingSaved(pairing, uId)) {
+        if (await SavedPairings.isPairingSaved(pairing.dish, pairing.wine_name, uId)) {
             return null
         }
         const { dish, wine_name } = pairing

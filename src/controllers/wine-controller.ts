@@ -6,6 +6,7 @@ import {
 } from './interfaces/wine-pair.models.js';
 import { StringUtils } from '../utils/string.utils.js';
 import OpenAi from '../services/openai-service.js';
+import { SavedPairings } from '../services/saved-pairings.js';
 
 const apiConfig = api_config()
 const { foodToWineApi: { url }, headers } = apiConfig['Recipe-Food-Nutrition']
@@ -16,9 +17,11 @@ export default class WineController {
     private readonly NUTRITION_HEADERS = apiConfig['Nutrition by API-Ninjas'].headers
     private readonly NUTRITION_URL = apiConfig['Nutrition by API-Ninjas'].url
     private poolController: PoolController;
+    private uId: string;
 
-    constructor() {
+    constructor(uId: string) {
         this.poolController = new PoolController("wine")
+        this.uId = uId;
     }
 
     async getPairing(dish: any, maxPrice?: number) {
@@ -27,19 +30,27 @@ export default class WineController {
                 return { error: `Couldn't find pairing for ${dish}`, dish }
             }
             
-            const foodWinePair = await this.getComplexWinePair(dish, maxPrice)
-            if (foodWinePair == null) {
+            const complexRes = await this.getComplexWinePair(dish, maxPrice)
+            const dishTitle = StringUtils.capitalizeFirsts(dish)
+            if (complexRes == null) {
+                
                 const simplePairRes = await this.getSimpleWinePair(dish)
-                return 'error' in simplePairRes ? simplePairRes : {
-                    pairedWines: simplePairRes,
-                    dish: StringUtils.capitalizeFirsts(dish),
+                if ('error' in simplePairRes) return simplePairRes
+
+                const pairedWines = await this.buildPairingsPayload(dishTitle, simplePairRes, 'simple')
+                return {
+                    pairedWines,
+                    dish: dishTitle,
                     maxPrice: maxPrice || null,
                     type: 'simple'
                 } as SimpleResponse
             }
+
+            const paired_wines = await this.buildPairingsPayload(dishTitle, complexRes, 'complex')
             return {
-                ...foodWinePair,
-                dish: StringUtils.capitalizeFirsts(dish),
+                ...complexRes,
+                paired_wines,
+                dish: dishTitle,
                 maxPrice: maxPrice || null,
                 type: 'complex'
             } as ComplexResponse
@@ -135,18 +146,6 @@ export default class WineController {
         const checkFood = await axios.get<Array<any>>(this.NUTRITION_URL, { headers: this.NUTRITION_HEADERS, params: { query: dish } })
         return !checkFood?.data.length;
     }
-    
-    private handleApiRes(res: Array<any> | object | string) {
-        if (Array.isArray(res)) {
-            return res
-        } else if (Array.isArray(Object.values(res)[0])) {
-            return Object.values(res)[0]
-        } else if (typeof res === 'string') {
-            return null
-        } else {
-            return Object.values(res)
-        }
-    }
 
     private isFoodWinePairError(object: any): object is FoodWinePairError {
         return 'status' in object;
@@ -164,5 +163,18 @@ export default class WineController {
                 averageRating: (product.averageRating * 100).toFixed(0)
             }
         })
+    }
+
+    private async buildPairingsPayload(dish: string, payload: any, type: 'simple' | 'complex') {
+        if (this.uId == undefined) return payload;
+
+        let pairedWines = type == 'simple' ? payload : payload.paired_wines;
+
+        pairedWines = pairedWines.map(async (wine: any) => {
+            const isSaved = await SavedPairings.isPairingSaved(dish, wine.wine_name, Number(this.uId))
+            return { ...wine, isSaved }
+        })
+
+        return await Promise.all(pairedWines)
     }
 }
